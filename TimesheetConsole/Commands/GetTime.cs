@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using DataAccess;
 using Domain;
 using Domain.BusinessRules;
+using Domain.Models;
 
 namespace TimesheetConsole.Commands
 {
   public static class GetTime
   {
-    private static string FormatTime(TimeSpan time)
+    public static string FormatTime(TimeSpan time)
     {
       return $"{time.Hours}h {time.Minutes}m";
     }
@@ -27,13 +28,17 @@ namespace TimesheetConsole.Commands
     public static string Execute(DateTime now)
     {
       var repo = new MainRepository();
-      var logs = repo.LoadLogs().OrderByDescending(l => l.DayStarted).ToList();
-      if (logs.Count == 0 || !TimeManagement.IsToday(logs[0].DayStarted))
+      var todaysLog = repo.LoadLatestLog();
+      if (todaysLog == null || !TimeManagement.IsToday(todaysLog.DayStarted))
       {
         return NotStarted();
       }
+      return GetLogStatus(now, todaysLog);
+    }
 
-      DateTime started = logs[0].DayStarted;
+    public static string GetLogStatus(DateTime now, DailyLog log)
+    {
+      DateTime started = log.DayStarted;
       TimeSpan passed = TimeManagement.PassedSince(started, now);
       TimeSpan left = TimeManagement.IsLeft(passed, out bool overflow);
       if (overflow)

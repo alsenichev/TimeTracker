@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Domain
+namespace Domain.Models
 {
     public class DailyLog
     {
       public DateTime DayStarted { get; set; }
+      public IList<TaskEntry> TaskEntries { get; set; }
     }
 }

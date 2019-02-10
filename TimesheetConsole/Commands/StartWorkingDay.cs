@@ -3,6 +3,7 @@ using System.Linq;
 using DataAccess;
 using Domain;
 using Domain.BusinessRules;
+using Domain.Models;
 
 namespace TimesheetConsole.Commands
 {
