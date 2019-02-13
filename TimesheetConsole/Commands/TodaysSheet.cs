@@ -39,10 +39,12 @@ namespace TimesheetConsole.Commands
 
     public override Result<string> Execute(Match regexMatch)
     {
+      // todo - a bit of a hack here. to make it correct we would need an Execute<T> signature
+      bool displayHeader = regexMatch != null;
       Result<string> formatSheet(DailySheet sheet) =>
         sheet.TaskEntries != null
-          ? Results.Success(FormatLog(sheet, true, true))
-          : Results.Success(FormatLog(sheet, true, false));
+          ? Results.Success(FormatLog(sheet, displayHeader, true))
+          : Results.Success(FormatLog(sheet, displayHeader, false));
 
       Result<string> startAndFormat() =>
         startWorkingDay.Execute(null)

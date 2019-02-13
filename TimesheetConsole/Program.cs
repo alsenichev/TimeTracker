@@ -54,10 +54,10 @@ namespace TimesheetConsole
       {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(string.Join(Environment.NewLine, commandResult.Messages));
+        Console.ForegroundColor = ConsoleColor.White;
       }
       else
       {
-        Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine(commandResult.Value);
       }
     }
@@ -83,6 +83,7 @@ namespace TimesheetConsole
       DisplayResult(ExecuteCommand(string.Join(" ",args)));
       for (;;)
       {
+        Console.WriteLine();
         var input = Console.ReadLine();
         if (exit.IsMatch(input??string.Empty))
         {
