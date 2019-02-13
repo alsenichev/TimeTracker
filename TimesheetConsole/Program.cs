@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using DataAccess;
+using Domain.Utils;
+using TimesheetConsole.Commands;
 
 namespace TimesheetConsole
 {
@@ -7,98 +12,83 @@ namespace TimesheetConsole
   {
     public static string ProductOwner = "Aleksey";
 
-    private static string HelpInfo()
+    private static readonly Regex help = new Regex(@"^\s*(help|\/\?)\s*$");
+    private static readonly Regex run = new Regex(@"^\s*run\s*$");
+    private static readonly Regex exit = new Regex(@"(^\s*$|^\s*exit\s*$)");
+    private static readonly Regex time = new Regex(@"^\s*time\s*$");
+    private static readonly Regex log = new Regex(@"^\s*log\s*$");
+    private static readonly Regex deleteTask = new Regex(@"^\s*del\s+(?<index>\d{1,3})\.?\s*$");
+    private static readonly Regex setDuration = new Regex(@"^(?<index>\d{1,3})\.?\s*(?<hours>\d{1,3})(?<fraction>\.5)?$");
+    private static readonly Regex addTask = new Regex(@"^\s*add\s*(?<entry>.*$)");
+
+    private static readonly MainRepository repository = new MainRepository();
+
+    private static readonly HelpInfo helpCommand = new HelpInfo("Help", help);
+    private static readonly StartWorkingDay startDayCommand =
+      new StartWorkingDay("Start working day command", run, repository);
+    private static readonly GetTime getTimeCommand =
+      new GetTime("Get time command", time, repository);
+    private static readonly TodaysSheet todaysSheetCommand =
+      new TodaysSheet("Today's sheet command", log, repository, startDayCommand);
+    private static readonly AddTask addTaskCommand =
+      new AddTask("Add task command", addTask,repository, startDayCommand, todaysSheetCommand);
+    private static readonly DeleteTask deleteTaskCommand =
+      new DeleteTask("Delete task command", deleteTask, repository, todaysSheetCommand);
+    private static readonly SetTaskDuration setTaskDurationCommand =
+      new SetTaskDuration("Set task duration command", setDuration, repository, todaysSheetCommand);
+
+    private static readonly IList<IAppCommand> allCommands = new List<IAppCommand>
     {
-      return
-@"Daily Log. Version: 1.0.0
+      helpCommand,
+      startDayCommand,
+      getTimeCommand,
+      todaysSheetCommand,
+      addTaskCommand,
+      deleteTaskCommand,
+      setTaskDurationCommand
+    };
 
-Usage: nn <command> [args]
-
-Available commands:
-run                     Starts the working day if it is not already started.
-time                    Tells how much time has passed since the working day
-                        started and how much time is left until the 8h working
-                        day end.
-log                     Displays the today's log.
-list [number of days]   Displays log entries for the last month or for the
-                        [number of days] if specified.";
-    }
-
-    private static (string msg, bool exit) RunCommand(string[] args)
+    private static void DisplayResult(Result<string> commandResult)
     {
-      switch (args[0])
+      if (!commandResult.IsSuccess)
       {
-        case "help":
-        case "/?":
-          return (HelpInfo(), false);
-        case "run":
-          return (Commands.StartWorkingDay.Execute(DateTime.Now), false);
-        case "time":
-          return (Commands.GetTime.Execute(DateTime.Now), false);
-        case "task":
-          EditTaskEntries(Commands.AddTask.Execute(args.Skip(1).ToArray()));
-          return ("", true);
-        case "log":
-          EditTaskEntries(Commands.TodaysLog.Execute(DateTime.Now, includeHeader:true));
-          return ("", true);
-        default :
-          return ($"Unknown command: {args[0]}", false);
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(string.Join(Environment.NewLine, commandResult.Messages));
+      }
+      else
+      {
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine(commandResult.Value);
       }
     }
 
-    private static void EditTaskEntries(string message)
+    private static Result<string> ExecuteCommand(string input)
     {
-      Console.WriteLine(message);
-      for (;;)
+      var matches = allCommands.Select(c =>
+      new {Match = c.CommandRegex.Match(input), Command = c}).Where(m => m.Match.Success).ToList();
+      switch (matches.Count)
       {
-        Console.WriteLine(
-                                          @"
-                                          <i> x(.5)   to edit duration
-                                          del <i>     to delete the task entry.
-                                          add [task]  to add a new task entry.
-                                          exit        to exit."
-          );
-        var input = Console.ReadLine();
-        (bool success, bool exit) = Commands.UpdateTaskEntry.Execute(input.Trim());
-        if (success)
-        {
-          Console.WriteLine();
-          Console.WriteLine(Commands.TodaysLog.Execute(DateTime.Now, includeHeader:false));
-          if (exit)
-          {
-            break;
-          }
-        }
-        else
-        {
-          Console.WriteLine($"Unknown command: {input}");
-        }
+          case 0:
+            return Results.Failure<string>($"Unrecognized command: {input}");
+          case 1:
+            return matches[0].Command.Execute(matches[0].Match);
+          default:
+            return Results.Failure<string>(
+              $"'{input}' matches more than one command: {string.Join(", ", matches.Select(m=>m.Command.Name))}");
       }
     }
 
     private static void Main(string[] args)
     {
-      if (args.Length == 0)
+      DisplayResult(ExecuteCommand(string.Join(" ",args)));
+      for (;;)
       {
-        Console.WriteLine(HelpInfo());
-        Console.ReadLine();
-      }
-      else
-      {
-        try
+        var input = Console.ReadLine();
+        if (exit.IsMatch(input??string.Empty))
         {
-          (string msg, bool exit) = RunCommand(args);
-          if (!exit)
-          {
-            Console.WriteLine(msg);
-            Console.ReadLine();
-          }
+          break;
         }
-        catch (Exception e)
-        {
-          Console.WriteLine(e);
-          Console.ReadLine();
-        }
+        DisplayResult(ExecuteCommand(input));
       }
     }
   }

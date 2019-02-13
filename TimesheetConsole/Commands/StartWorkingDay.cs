@@ -1,33 +1,43 @@
 ﻿using System;
-using System.Linq;
+using System.Text.RegularExpressions;
 using DataAccess;
-using Domain;
-using Domain.BusinessRules;
 using Domain.Models;
+using Domain.Utils;
 
 namespace TimesheetConsole.Commands
 {
-  static class StartWorkingDay
+  public class StartWorkingDay : AppCommandBase
   {
-    private static string WorkingDayStarted(DateTime time) => 
-      $"Hello {Program.ProductOwner}. Your working day started {time:f}";
+    private readonly MainRepository repository;
 
-    private static string WorkingDayAlreadyStarted(DateTime time) => 
-      $"{Program.ProductOwner}, your working day is already started at {time:f}";
-
-    public static string Execute(DateTime now)
+    private static string WorkingDayStarted(DateTime time)
     {
-      var repo = new MainRepository();
-      var logs = repo.LoadLogs().OrderByDescending(l => l.DayStarted).ToList();
-      if (logs.Count > 0 && TimeManagement.IsToday(logs[0].DayStarted))
-      {
-        return WorkingDayAlreadyStarted(logs[0].DayStarted);
-      }
+      return $"Hello {Program.ProductOwner}. Your working day started {time:f}";
+    }
 
-      var log = new DailyLog {DayStarted = now};
-      logs.Add(log);
-      repo.SaveLogs(logs);
-      return WorkingDayStarted(now);
+    private static string WorkingDayAlreadyStarted(DateTime time)
+    {
+      return $"{Program.ProductOwner}, your working day is already started at {time:f}";
+    }
+
+    public StartWorkingDay(string name, Regex regex, MainRepository repository) : base(name, regex)
+    {
+      this.repository = repository;
+    }
+
+    public override Result<string> Execute(Match regexMatch)
+    {
+      Result<string> todayNotPresent() =>
+        repository.SaveTodaySheet(new DailySheet {DayStarted = DateTime.Now})
+          .Map(r => WorkingDayStarted(DateTime.Now));
+
+      Result<string> todayPresent(DailySheet s) =>
+        Results.Success(WorkingDayAlreadyStarted(s.DayStarted));
+
+      Result<string> startIfTodayNotPresent(Option<DailySheet> maybeToday) =>
+        maybeToday.Fold(todayPresent, todayNotPresent);
+
+      return repository.GetTodaySheet().Bind(startIfTodayNotPresent);
     }
   }
 }

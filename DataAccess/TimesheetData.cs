@@ -6,6 +6,6 @@ namespace DataAccess
 {
   public class TimesheetData
   {
-    public IList<DailyLog> Logs { get; set; }
+    public IList<DailySheet> Logs { get; set; }
   }
 }

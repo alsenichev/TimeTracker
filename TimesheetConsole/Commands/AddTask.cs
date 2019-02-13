@@ -1,28 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using DataAccess;
 using Domain.BusinessRules;
 using Domain.Models;
+using Domain.Utils;
 
 namespace TimesheetConsole.Commands
 {
-  public static class AddTask
+  public class AddTask:AppCommandBase
   {
-    public static string Execute(string[] args)
+    private readonly MainRepository repository;
+    private readonly StartWorkingDay startWorkingDay;
+    private readonly TodaysSheet todaysSheet;
+
+    public AddTask(
+      string name,
+      Regex regex,
+      MainRepository repository,
+      StartWorkingDay startWorkingDay,
+      TodaysSheet todaysSheet) : base(name, regex)
     {
-      string name = string.Join(" ", args);
-      var repo = new MainRepository();
-      var log = repo.LoadLatestLog();
-      if (log == null || !TimeManagement.IsToday(log.DayStarted))
+      this.repository = repository;
+      this.startWorkingDay = startWorkingDay;
+      this.todaysSheet = todaysSheet;
+    }
+
+    public override Result<string> Execute(Match regexMatch)
+    {
+      Result<object> createTask(DailySheet sheet)
       {
-        StartWorkingDay.Execute(DateTime.Now);
-        log = repo.LoadLatestLog();
+        var tasks = sheet.TaskEntries ?? new List<TaskEntry>();
+        tasks.Add(new TaskEntry{ Name = regexMatch.Groups["entry"].Value });
+        sheet.TaskEntries = tasks;
+        return repository.SaveTodaySheet(sheet);
       }
-      var tasks = log.TaskEntries ?? new List<TaskEntry>();
-      tasks.Add(new TaskEntry{ Name = name });
-      log.TaskEntries = tasks;
-      repo.UpdateTodaysLog(log);
-      return TodaysLog.Execute(DateTime.Now, includeHeader:true);
+
+      Result<object> startAndCreateTask() =>
+        startWorkingDay.Execute(null)
+          .Bind(_ => repository.GetTodaySheet())
+          .Bind(o => o.Fold(
+            createTask,
+            () => Results.Failure<object>("Failed to create a new task.")));
+
+      return repository.GetTodaySheet()
+        .Bind(o => o.Fold(createTask, startAndCreateTask)).Bind(_ => todaysSheet.Execute(null));
     }
   }
 }
