@@ -27,8 +27,11 @@ namespace DataAccess
         {
           Directory.GetParent(fileName).Create();
         }
-
-        var data = new TimesheetData {Logs = logs.ToList()};
+        var data = new TimesheetData
+        {
+          // save only for 2 latest months
+          Logs = logs.OrderByDescending(l => l.DayStarted).Take(61).ToList()
+        };
         string json = JsonConvert.SerializeObject(data);
         File.WriteAllText(fileName, json);
         return Results.SuccessfulUnit;
@@ -37,6 +40,12 @@ namespace DataAccess
       {
         return Results.Failure<object>($"Failed to save sheets: {e.Message}.");
       }
+    }
+    private Result<Option<DailySheet>> GetLatestSheet()
+    {
+      return GetAllSheets().Map(
+        r => Options.NotNull(
+          r.OrderByDescending(s => s.DayStarted).FirstOrDefault()));
     }
     #endregion
 
@@ -47,22 +56,15 @@ namespace DataAccess
         if (File.Exists(fileName))
         {
           string json = File.ReadAllText(fileName);
-          IList<DailySheet> result =  JsonConvert.DeserializeObject<TimesheetData>(json).Logs;
-          return Results.Success(result);
+          IList<DailySheet> result =  JsonConvert.DeserializeObject<TimesheetData>(json)?.Logs;
+          return Results.Success(result ?? new List<DailySheet>());
         }
         return Results.Success<IList<DailySheet>>(new List<DailySheet>());
       }
       catch (Exception e)
       {
-        return Results.Failure<IList<DailySheet>>($"Failed to read sheets from disk: {e.Message}.");
+        return Results.Failure<IList<DailySheet>>($"Failed to read sheets from disk: {e}.");
       }
-    }
-
-    public Result<Option<DailySheet>> GetLatestSheet()
-    {
-      return GetAllSheets().Map(
-        r => Options.NotNull(
-          r.OrderByDescending(s => s.DayStarted).FirstOrDefault()));
     }
 
     public Result<Option<DailySheet>> GetTodaySheet()

@@ -17,7 +17,7 @@ namespace TimesheetConsole.Commands
 
     private static string WorkingDayAlreadyStarted(DateTime time)
     {
-      return $"{Program.ProductOwner}, your working day is already started at {time:f}";
+      return $"{Program.ProductOwner}, your working day is already started at {time:t}";
     }
 
     public StartWorkingDay(string name, Regex regex, MainRepository repository) : base(name, regex)

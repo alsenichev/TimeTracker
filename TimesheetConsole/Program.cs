@@ -20,6 +20,7 @@ namespace TimesheetConsole
     private static readonly Regex deleteTask = new Regex(@"^\s*del\s+(?<index>\d{1,3})\.?\s*$");
     private static readonly Regex setDuration = new Regex(@"^(?<index>\d{1,3})\.?\s*(?<hours>\d{1,3})(?<fraction>\.5)?$");
     private static readonly Regex addTask = new Regex(@"^\s*add\s*(?<entry>.*$)");
+    private static readonly Regex list = new Regex(@"^\s*list\s*(?<count>\s\d{1,3})?\s*$");
 
     private static readonly MainRepository repository = new MainRepository();
 
@@ -36,6 +37,8 @@ namespace TimesheetConsole
       new DeleteTask("Delete task command", deleteTask, repository, todaysSheetCommand);
     private static readonly SetTaskDuration setTaskDurationCommand =
       new SetTaskDuration("Set task duration command", setDuration, repository, todaysSheetCommand);
+    private static readonly ListSheets listSheetsCommand =
+      new ListSheets("List sheets command", list, repository);
 
     private static readonly IList<IAppCommand> allCommands = new List<IAppCommand>
     {
@@ -45,7 +48,8 @@ namespace TimesheetConsole
       todaysSheetCommand,
       addTaskCommand,
       deleteTaskCommand,
-      setTaskDurationCommand
+      setTaskDurationCommand,
+      listSheetsCommand
     };
 
     private static void DisplayResult(Result<string> commandResult)
