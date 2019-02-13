@@ -51,6 +51,7 @@
     <Compile Include="Commands\HelpInfo.cs" />
     <Compile Include="Commands\IAppCommand.cs" />
     <Compile Include="Commands\ListSheets.cs" />
+    <Compile Include="Commands\SetPause.cs" />
     <Compile Include="Commands\StartWorkingDay.cs" />
     <Compile Include="Commands\TodaysSheet.cs" />
     <Compile Include="Commands\DeleteTask.cs" />

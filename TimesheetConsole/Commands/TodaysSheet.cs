@@ -17,19 +17,18 @@ namespace TimesheetConsole.Commands
     {
       string startedAt = GetTime.GetLogStatus(sheet);
       string header = includeHeader ? $"{startedAt}{Environment.NewLine}{Environment.NewLine}" : "";
-      TimeSpan passed = TimeManagement.PassedSince(sheet.DayStarted, DateTime.Now);
+      TimeSpan passed = TimeManagement.PassedSince(sheet.DayStarted);
       if (sheet.TaskEntries == null || sheet.TaskEntries.Count == 0)
       {
-        return $"{header}No tasks created today.{Environment.NewLine}Unregistered time {GetTime.FormatTime(passed)}.";
+        return $"{header}No tasks created today.{Environment.NewLine}Unregistered time {GetTime.FormatTime(passed - sheet.Break)}.";
       }
 
       var formattedEntries = sheet.TaskEntries.Select((e, i) =>
         $"{i + 1}. {e.Name}, duration: {GetTime.FormatTime(e.Duration)}");
       var entries = string.Join(Environment.NewLine, formattedEntries);
       var total = sheet.TaskEntries.Aggregate(TimeSpan.Zero, (a, c) => a + c.Duration);
-      var unregistered = total-passed;
       return
-        $"{header}Here's the list of your tasks:{Environment.NewLine}{entries}{Environment.NewLine}Totally {GetTime.FormatTime(total)}. Unregistered time {GetTime.FormatTime(passed-total)}.";
+        $"{header}Here's the list of your tasks:{Environment.NewLine}{entries}{Environment.NewLine}Totally {GetTime.FormatTime(total)}. Unregistered time {GetTime.FormatTime(passed-sheet.Break-total)}.";
     }
 
     public TodaysSheet(

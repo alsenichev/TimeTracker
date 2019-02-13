@@ -36,7 +36,7 @@ namespace TimesheetConsole.Commands
       return repository.GetTodaySheet()
         .Bind(o => o.Fold(
           deleteTask,
-          () => Results.Failure<object>("Today's sheet is expected to delete a task.")))
+          () => Results.Failure<object>("There is no today's sheet to delete a task.")))
         .Bind(_ => todaysSheet.Execute(null));
     }
   }

@@ -9,21 +9,24 @@ namespace Domain.BusinessRules
       return time.Date.Equals(DateTime.Now.Date);
     }
 
-    public static TimeSpan PassedSince(DateTime started, DateTime now)
+    public static TimeSpan PassedSince(DateTime started)
     {
-      return now - started;
+      return DateTime.Now - started;
     }
 
-    public static TimeSpan IsLeft(TimeSpan passed, out bool overtime)
+    /// <summary>
+    /// Either how much is left or how much is an overtime.
+    /// </summary>
+    public static TimeSpan Delta(TimeSpan passed, TimeSpan pause, out bool overtime)
     {
-      if (passed.TotalHours > 8)
+      if ((passed - pause).TotalHours > 8)
       {
         overtime = true;
-        return passed - TimeSpan.FromHours(8);
+        return passed - pause - TimeSpan.FromHours(8);
       }
 
       overtime = false;
-      return TimeSpan.FromHours(8) - passed;
+      return TimeSpan.FromHours(8) + pause - passed;
     }
   }
 }

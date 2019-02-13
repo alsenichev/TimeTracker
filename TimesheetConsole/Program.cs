@@ -16,9 +16,11 @@ namespace TimesheetConsole
     private static readonly Regex run = new Regex(@"^\s*run\s*$");
     private static readonly Regex exit = new Regex(@"(^\s*$|^\s*exit\s*$)");
     private static readonly Regex time = new Regex(@"^\s*time\s*$");
-    private static readonly Regex log = new Regex(@"^\s*log\s*$");
+    //todo make private
+    public static readonly Regex log = new Regex(@"^\s*log\s*$");
     private static readonly Regex deleteTask = new Regex(@"^\s*del\s+(?<index>\d{1,3})\.?\s*$");
     private static readonly Regex setDuration = new Regex(@"^(?<index>\d{1,3})\.?\s*(?<hours>\d{1,3})(?<fraction>\.5)?$");
+    private static readonly Regex setPause = new Regex(@"^\s*pause\s*(?<minutes>\d{1,3})\s*$");
     private static readonly Regex addTask = new Regex(@"^\s*add\s*(?<entry>.*$)");
     private static readonly Regex list = new Regex(@"^\s*list\s*(?<count>\s\d{1,3})?\s*$");
 
@@ -39,6 +41,8 @@ namespace TimesheetConsole
       new SetTaskDuration("Set task duration command", setDuration, repository, todaysSheetCommand);
     private static readonly ListSheets listSheetsCommand =
       new ListSheets("List sheets command", list, repository);
+    private static readonly SetPause setPauseCommand =
+      new SetPause("Set pause command", setPause, repository, todaysSheetCommand);
 
     private static readonly IList<IAppCommand> allCommands = new List<IAppCommand>
     {
@@ -49,7 +53,8 @@ namespace TimesheetConsole
       addTaskCommand,
       deleteTaskCommand,
       setTaskDurationCommand,
-      listSheetsCommand
+      listSheetsCommand,
+      setPauseCommand
     };
 
     private static void DisplayResult(Result<string> commandResult)

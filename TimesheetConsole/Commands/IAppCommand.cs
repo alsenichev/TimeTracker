@@ -24,6 +24,7 @@ namespace TimesheetConsole.Commands
 
     public string Name { get; set; }
 
+    //Todo not a Match but a full-blown parameter object.
     public abstract Result<string> Execute(Match regexMatch);
   }
 }
