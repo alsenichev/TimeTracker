@@ -28,5 +28,10 @@ namespace Domain.BusinessRules
       overtime = false;
       return TimeSpan.FromHours(8) + pause - passed;
     }
+
+    public static DateTime EndOfDay(DateTime started, TimeSpan pause)
+    {
+      return started.Add(TimeSpan.FromHours(8)).Add(pause);
+    }
   }
 }

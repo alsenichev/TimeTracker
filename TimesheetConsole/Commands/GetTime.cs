@@ -16,12 +16,12 @@ namespace TimesheetConsole.Commands
       return $"{time.Hours}h {time.Minutes}m";
     }
 
-    private static string MoreToWork(DateTime started, TimeSpan passed, TimeSpan pause, TimeSpan left)
+    private static string MoreToWork(DateTime started, TimeSpan passed, TimeSpan pause, TimeSpan left, DateTime endOfDay)
     {
       string pausePostfix =
         pause.Equals(TimeSpan.Zero) ? string.Empty : $" and took a {FormatTime(pause)} pause";
       return
-        $@"{Program.ProductOwner}, you work for {FormatTime(passed - pause)}.{Environment.NewLine}You've started today at {started:t}{pausePostfix}.{Environment.NewLine}More {FormatTime(left)} to go for a 8 hours working day.";
+        $@"{Program.ProductOwner}, you work for {FormatTime(passed - pause)}.{Environment.NewLine}You've started today at {started:t}{pausePostfix}.{Environment.NewLine}Your working day ends at {endOfDay:t} in {FormatTime(left)}.";
     }
 
     private static string Overtime(DateTime started, TimeSpan passed, TimeSpan pause, TimeSpan overtime)
@@ -43,13 +43,14 @@ namespace TimesheetConsole.Commands
       TimeSpan pause = sheet.Break;
       TimeSpan passed = TimeManagement.PassedSince(started);
       TimeSpan delta = TimeManagement.Delta(passed, pause, out bool overflow);
+      DateTime endOfDay = TimeManagement.EndOfDay(started, pause);
       if (overflow)
       {
         return Overtime(started, passed, pause, delta);
       }
       else
       {
-        return MoreToWork(started, passed, pause, delta);
+        return MoreToWork(started, passed, pause, delta, endOfDay);
       }
     }
 
