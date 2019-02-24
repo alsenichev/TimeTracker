@@ -16,20 +16,19 @@ namespace TimesheetConsole.Commands
       return $"{time.Hours}h {time.Minutes}m";
     }
 
-    private static string MoreToWork(DateTime started, TimeSpan passed, TimeSpan pause, TimeSpan left, DateTime endOfDay)
+    private static string MoreToWork(DateTime started, TimeSpan pause, TimeSpan left, DateTime endOfDay)
     {
       string pausePostfix =
         pause.Equals(TimeSpan.Zero) ? string.Empty : $" and took a {FormatTime(pause)} pause";
-      return
-        $@"{Program.ProductOwner}, you work for {FormatTime(passed - pause)}.{Environment.NewLine}You've started today at {started:t}{pausePostfix}.{Environment.NewLine}Your working day ends at {endOfDay:t} in {FormatTime(left)}.";
+      return $@"You've started today at {started:t}{pausePostfix}.{Environment.NewLine}Your working day ends at {endOfDay:t} in {FormatTime(left)}.";
     }
 
-    private static string Overtime(DateTime started, TimeSpan passed, TimeSpan pause, TimeSpan overtime)
+    private static string Overtime(DateTime started, TimeSpan pause, TimeSpan overtime)
     {
       string pausePostfix =
         pause.Equals(TimeSpan.Zero) ? string.Empty : $" and took a {FormatTime(pause)} pause";
       return
-        $"{Program.ProductOwner}, you work for {FormatTime(passed - pause)}.{Environment.NewLine}You've started today at {started:t}{pausePostfix}.{Environment.NewLine}It makes a {overtime:t} overtime.";
+        $"You've started today at {started:t}{pausePostfix}.{Environment.NewLine}It makes a {FormatTime(overtime)} overtime.";
     }
 
     private static string NotStarted()
@@ -46,11 +45,11 @@ namespace TimesheetConsole.Commands
       DateTime endOfDay = TimeManagement.EndOfDay(started, pause);
       if (overflow)
       {
-        return Overtime(started, passed, pause, delta);
+        return Overtime(started, pause, delta);
       }
       else
       {
-        return MoreToWork(started, passed, pause, delta, endOfDay);
+        return MoreToWork(started, pause, delta, endOfDay);
       }
     }
 
