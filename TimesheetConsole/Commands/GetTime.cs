@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using DataAccess;
-using Domain.BusinessRules;
 using Domain.Models;
 using Domain.Utils;
 
@@ -11,45 +10,41 @@ namespace TimesheetConsole.Commands
   {
     private readonly MainRepository repository;
 
-    public static string FormatTime(TimeSpan time)
+    public static string FormatTimeSpan(TimeSpan time)
     {
       return $"{time.Hours}h {time.Minutes}m";
     }
 
-    private static string MoreToWork(DateTime started, TimeSpan pause, TimeSpan left, DateTime endOfDay)
+    private static string MoreToWork(Status status)
     {
       string pausePostfix =
-        pause.Equals(TimeSpan.Zero) ? string.Empty : $" and took a {FormatTime(pause)} pause";
-      return $@"You've started today at {started:t}{pausePostfix}.{Environment.NewLine}Your working day ends at {endOfDay:t} in {FormatTime(left)}.";
+        status.Pause == TimeSpan.Zero
+          ? string.Empty
+          : status.Pause > TimeSpan.Zero
+            ? $" and took a {FormatTimeSpan(status.Pause)} pause"
+            : $" and have {FormatTimeSpan(-status.Pause)} deposed";
+      return $@"You've started today at {status.StartedAt:t}{pausePostfix}.{Environment.NewLine}Your working day ends at {status.EndOfDay:t} in {FormatTimeSpan(status.Left)}.";
     }
 
-    private static string Overtime(DateTime started, TimeSpan pause, TimeSpan overtime)
+    private static string Overtime(Status status)
     {
       string pausePostfix =
-        pause.Equals(TimeSpan.Zero) ? string.Empty : $" and took a {FormatTime(pause)} pause";
+        status.Pause.Equals(TimeSpan.Zero) ? string.Empty : $" and took a {FormatTimeSpan(status.Pause)} pause";
       return
-        $"You've started today at {started:t}{pausePostfix}.{Environment.NewLine}It makes a {FormatTime(overtime)} overtime.";
+        $"You've started today at {status.StartedAt:t}{pausePostfix}.{Environment.NewLine}It makes a {FormatTimeSpan(status.Overtime)} overtime.";
     }
 
-    private static string NotStarted()
-    {
-      return $"{Program.ProductOwner}, you've not started yet :)";
-    }
+    #region public methods
 
-    public static string GetLogStatus(DailySheet sheet)
+    public static string FormatStatus(Status status)
     {
-      DateTime started = sheet.DayStarted;
-      TimeSpan pause = sheet.Break;
-      TimeSpan passed = TimeManagement.PassedSince(started);
-      TimeSpan delta = TimeManagement.Delta(passed, pause, out bool overflow);
-      DateTime endOfDay = TimeManagement.EndOfDay(started, pause);
-      if (overflow)
+      if (status.IsOvertime)
       {
-        return Overtime(started, pause, delta);
+        return Overtime(status);
       }
       else
       {
-        return MoreToWork(started, pause, delta, endOfDay);
+        return MoreToWork(status);
       }
     }
 
@@ -60,8 +55,9 @@ namespace TimesheetConsole.Commands
 
     public override Result<string> Execute(Match regexMatch)
     {
-      return repository.GetTodaySheet()
-        .Map(o => o.Fold(GetLogStatus, NotStarted));
+      return repository.GetStatus()
+        .Map(FormatStatus);
     }
   }
+    #endregion
 }

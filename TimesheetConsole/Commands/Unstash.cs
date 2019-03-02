@@ -6,12 +6,12 @@ using Domain.Utils;
 
 namespace TimesheetConsole.Commands
 {
-  public class AddTask:AppCommandBase
+  class Unstash : AppCommandBase
   {
     private readonly MainRepository repository;
     private readonly TodaysSheet todaysSheet;
 
-    public AddTask(
+    public Unstash(
       string name,
       Regex regex,
       MainRepository repository,
@@ -23,15 +23,19 @@ namespace TimesheetConsole.Commands
 
     public override Result<string> Execute(Match regexMatch)
     {
-      Result<object> createTask(Status status)
+      Result<string> SaveStash(Status status)
       {
-        var day = status.Day.AddTask(
-          new TaskEntry(regexMatch.Groups["entry"].Value, TimeSpan.Zero));
-        return repository.SaveTodaySheet(day);
+        if (status.Stash > TimeSpan.Zero)
+        {
+          return repository.SaveStash(TimeSpan.Zero)
+            .Bind(_ => todaysSheet.Execute(Program.log.Match("log")));
+        }
+        else
+        {
+          return Results.Success("Nothing to unstash.");
+        }
       }
-
-      return repository.GetStatus()
-        .Bind(createTask).Bind(_ => todaysSheet.Execute(null));
+      return repository.GetStatus().Bind(SaveStash);
     }
   }
 }

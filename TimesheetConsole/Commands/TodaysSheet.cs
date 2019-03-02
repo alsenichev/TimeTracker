@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using DataAccess;
-using Domain.BusinessRules;
 using Domain.Models;
 using Domain.Utils;
 
@@ -11,49 +10,43 @@ namespace TimesheetConsole.Commands
   public class TodaysSheet : AppCommandBase
   {
     private readonly MainRepository repository;
-    private readonly StartWorkingDay startWorkingDay;
 
-    private static string FormatLog(DailySheet sheet, bool includeHeader)
+    private static string FormatStatus(Status status, bool includeHeader)
     {
-      string startedAt = GetTime.GetLogStatus(sheet);
+      string startedAt = GetTime.FormatStatus(status);
       string header = includeHeader ? $"{startedAt}{Environment.NewLine}{Environment.NewLine}" : "";
-      TimeSpan passed = TimeManagement.PassedSince(sheet.DayStarted);
-      if (sheet.TaskEntries == null || sheet.TaskEntries.Count == 0)
+      if (status.Day.Tasks == null || status.Day.Tasks.Count == 0)
       {
-        return $"{header}No tasks created today.{Environment.NewLine}Unregistered time {GetTime.FormatTime(passed - sheet.Break)}.";
+        return $"{header}No tasks created today.{Environment.NewLine}" +
+               $"Unregistered time {GetTime.FormatTimeSpan(status.UnregisteredTime)}.";
       }
 
-      var formattedEntries = sheet.TaskEntries.Select((e, i) =>
-        $"{i + 1}. {e.Name}, duration: {GetTime.FormatTime(e.Duration)}");
+      var formattedEntries = status.Day.Tasks.Select((e, i) =>
+        $"{i + 1}. {e.Name}, duration: {GetTime.FormatTimeSpan(e.Duration)}");
       var entries = string.Join(Environment.NewLine, formattedEntries);
-      var total = sheet.TaskEntries.Aggregate(TimeSpan.Zero, (a, c) => a + c.Duration);
+      string stashPostfix = status.Stash > TimeSpan.Zero
+        ? $" Stashed time {GetTime.FormatTimeSpan(status.Stash)}."
+        : string.Empty;
       return
-        $"{header}Here's the list of your tasks:{Environment.NewLine}{entries}{Environment.NewLine}Totally {GetTime.FormatTime(total)}. Unregistered time {GetTime.FormatTime(passed-sheet.Break-total)}.";
+        $"{header}Here's the list of your tasks:{Environment.NewLine}{entries}{Environment.NewLine}" +
+        $"Totally {GetTime.FormatTimeSpan(status.RegisteredTime)}. Unregistered time {GetTime.FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix}";
     }
 
     public TodaysSheet(
-      string name, Regex regex, MainRepository repository, StartWorkingDay startWorkingDay) : base(
+      string name, Regex regex, MainRepository repository) : base(
       name, regex)
     {
       this.repository = repository;
-      this.startWorkingDay = startWorkingDay;
     }
 
     public override Result<string> Execute(Match regexMatch)
     {
       // todo - a bit of a hack here. to make it correct we would need an Execute<T> signature
       bool displayHeader = regexMatch != null;
-      Result<string> formatSheet(DailySheet sheet) =>
-        Results.Success(FormatLog(sheet, displayHeader));
+      Result<string> formatSheet(Status sheet) =>
+        Results.Success(FormatStatus(sheet, displayHeader));
 
-      Result<string> startAndFormat() =>
-        startWorkingDay.Execute(null)
-          .Bind(_ => repository.GetTodaySheet())
-          .Bind(o => o.Fold(
-            formatSheet,
-            () => Results.Failure<string>("Failed to start working day.")));
-
-      return repository.GetTodaySheet().Bind(o => o.Fold(formatSheet, startAndFormat));
+      return repository.GetStatus().Bind(formatSheet);
     }
   }
 }

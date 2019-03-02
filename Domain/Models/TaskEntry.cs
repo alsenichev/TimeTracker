@@ -2,10 +2,16 @@
 
 namespace Domain.Models
 {
-  public class TaskEntry
+  public struct TaskEntry
   {
-    public string Name { get; set; }
+    public TaskEntry(string name, TimeSpan duration)
+    {
+      Name = name;
+      Duration = duration;
+    }
 
-    public TimeSpan Duration { get; set; }
+    public string Name { get; }
+
+    public TimeSpan Duration { get; }
   }
 }

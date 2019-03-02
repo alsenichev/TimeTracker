@@ -11,21 +11,21 @@ namespace TimesheetConsole.Commands
   {
     private readonly MainRepository repository;
 
-    private static string FormatLog(DailySheet sheet)
+    private static string FormatLog(Day day)
     {
-      string header = $"Started on {sheet.DayStarted:D} at {sheet.DayStarted:t}";
+      string header = $"Started on {day.DayStarted:D} at {day.DayStarted:t}";
       // todo - maybe consider Option for TaskEntries property, but possibly would need a separate model for Json serialization
-      if (sheet.TaskEntries == null || sheet.TaskEntries.Count == 0)
+      if (day.Tasks == null || day.Tasks.Count == 0)
       {
         return $"{header}{Environment.NewLine}No tasks created.";
       }
 
-      var formattedEntries = sheet.TaskEntries.Select((e, i) =>
-        $"{i + 1}. {e.Name}, duration: {GetTime.FormatTime(e.Duration)}");
+      var formattedEntries = day.Tasks.Select((e, i) =>
+        $"{i + 1}. {e.Name}, duration: {GetTime.FormatTimeSpan(e.Duration)}");
       var entries = string.Join(Environment.NewLine, formattedEntries);
-      var total = sheet.TaskEntries.Aggregate(TimeSpan.Zero, (a, c) => a + c.Duration);
+      var total = day.Tasks.Aggregate(TimeSpan.Zero, (a, c) => a + c.Duration);
       return
-        $"{header}{Environment.NewLine}{entries}{Environment.NewLine}Totally {GetTime.FormatTime(total)}";
+        $"{header}{Environment.NewLine}{entries}{Environment.NewLine}Totally {GetTime.FormatTimeSpan(total)}";
     }
 
     public ListSheets(string name, Regex regex, MainRepository repository) : base(name, regex)
@@ -42,7 +42,7 @@ namespace TimesheetConsole.Commands
         count = int.Parse(countGroup.Value);
       }
 
-      return repository.GetAllSheets()
+      return repository.GetAllDays()
         .Map(s =>
           string.Join($"{Environment.NewLine}{Environment.NewLine}",
             s.OrderByDescending(e => e.DayStarted)

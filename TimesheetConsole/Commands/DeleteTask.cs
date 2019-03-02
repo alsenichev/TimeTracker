@@ -23,20 +23,18 @@ namespace TimesheetConsole.Commands
     public override Result<string> Execute(Match regexMatch)
     {
       int index = int.Parse(regexMatch.Groups["index"].Value) - 1;
-      Result<object> deleteTask(DailySheet sheet)
+      Result<object> deleteTask(Day sheet)
       {
-        if (sheet.TaskEntries==null || sheet.TaskEntries.Count <= index)
+        if (sheet.Tasks==null || sheet.Tasks.Count <= index)
         {
           return Results.Failure<object>($"There is no task at index {index + 1} in today's sheet.");
         }
-        sheet.TaskEntries.RemoveAt(index);
+        sheet.Tasks.RemoveAt(index);
         return repository.SaveTodaySheet(sheet);
       }
 
-      return repository.GetTodaySheet()
-        .Bind(o => o.Fold(
-          deleteTask,
-          () => Results.Failure<object>("There is no today's sheet to delete a task.")))
+      return repository.GetStatus()
+        .Bind(s => deleteTask(s.Day))
         .Bind(_ => todaysSheet.Execute(null));
     }
   }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
-using Domain;
-using Domain.BusinessRules;
+using DataAccess.Mappers;
+using DataAccess.Models;
 using Domain.Models;
 using Domain.Utils;
 using Newtonsoft.Json;
@@ -16,10 +17,27 @@ namespace DataAccess
       Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
         "Daily logs",
-        "Logs.json");
+        "Days.json");
 
     #region private methods
-    public Result<object> SaveSheets(IEnumerable<DailySheet> logs)
+    private Result<LogBook> GetLogBook()
+    {
+      try
+      {
+        if (File.Exists(fileName))
+        {
+          string json = File.ReadAllText(fileName);
+          LogBookData result =  JsonConvert.DeserializeObject<LogBookData>(json);
+          return Results.Success(LogBookMapper.SafeMap(result));
+        }
+        return Results.Success(LogBookMapper.SafeMap(null));
+      }
+      catch (Exception e)
+      {
+        return Results.Failure<LogBook>($"Failed to read daily sheets from disk: {e}.");
+      }
+    }
+    private Result<object> SaveLogBook(LogBook logBook)
     {
       try
       {
@@ -27,10 +45,12 @@ namespace DataAccess
         {
           Directory.GetParent(fileName).Create();
         }
-        var data = new TimesheetData
+        var data = new LogBookData
         {
           // save only for 2 latest months
-          Logs = logs.OrderByDescending(l => l.DayStarted).Take(61).ToList()
+          Days = logBook.Days.OrderByDescending(l => l.DayStarted)
+            .Take(61).Select(d=>DayMapper.Map(d)).ToList(),
+          Stash = logBook.Stash
         };
         string json = JsonConvert.SerializeObject(data);
         File.WriteAllText(fileName, json);
@@ -41,53 +61,65 @@ namespace DataAccess
         return Results.Failure<object>($"Failed to save sheets: {e.Message}.");
       }
     }
-    private Result<Option<DailySheet>> GetLatestSheet()
+
+    private Result<Status> OfNewDay(LogBook logBook)
     {
-      return GetAllSheets().Map(
-        r => Options.NotNull(
-          r.OrderByDescending(s => s.DayStarted).FirstOrDefault()));
+      // stash becomes a negative pause for a new day
+      var day = new Day(DateTime.Now.RoundSeconds(), -logBook.Stash, new List<TaskEntry>());
+      var days = logBook.Days;
+      days.Add(day);
+      // reset stash after it was converted into a negative pause for the new day
+      var toSave = new LogBook(days, TimeSpan.Zero);
+      // don't like the idea to recursively call GetStatus(), because if we
+      // might save log and mistakenly read it from different places, we'll get an infinite recursion
+      return SaveLogBook(toSave).Map(_ => new Status(day, TimeSpan.Zero));
     }
     #endregion
 
-    public Result<IList<DailySheet>> GetAllSheets()
+    public Result<Status> GetStatus()
     {
-      try
-      {
-        if (File.Exists(fileName))
-        {
-          string json = File.ReadAllText(fileName);
-          IList<DailySheet> result =  JsonConvert.DeserializeObject<TimesheetData>(json)?.Logs;
-          return Results.Success(result ?? new List<DailySheet>());
-        }
-        return Results.Success<IList<DailySheet>>(new List<DailySheet>());
-      }
-      catch (Exception e)
-      {
-        return Results.Failure<IList<DailySheet>>($"Failed to read sheets from disk: {e}.");
-      }
-    }
-
-    public Result<Option<DailySheet>> GetTodaySheet()
-    {
-      Result<Option<DailySheet>> maybeLatestResult = GetLatestSheet();
-      Option<DailySheet> maybeToday(DailySheet s) =>
-        Options.Of(s, i => TimeManagement.IsToday(i.DayStarted));
-      return maybeLatestResult.Map(o => o.Bind(maybeToday));
+      Option<Day> latest (LogBook b) =>
+        b.Days.Any()
+          ? Options.Some(b.Days.OrderByDescending(s => s.DayStarted).First())
+          : Options.None<Day>();
+      Option<Day> today(Day s) =>
+        Options.Of(s, i => i.DayStarted.Date.Equals(DateTime.Now.Date));
+      return GetLogBook()
+        .Bind(b =>
+          latest(b)
+            .Bind(today)
+            .Fold(t =>
+              Results.Success(new Status(t, b.Stash)),
+              () => OfNewDay(b)));
     }
 
     /// <summary>
-    /// This will add or update existing sheet if it is today. And save.
+    /// This will add or update existing day if it is today. And save.
     /// </summary>
-    public Result<object> SaveTodaySheet(DailySheet sheet)
+    public Result<object> SaveTodaySheet(Day day)
     {
-      var all = GetAllSheets();
-      var dict = all.Map(s => s.ToDictionary(k => k.DayStarted));
-      var update = dict.Map(d =>
+      var logBook = GetLogBook();
+      var dict = logBook.Map(b => b.Days).Map(s => s.ToDictionary(k => k.DayStarted));
+      Result<List<Day>> update = dict.Map(d =>
           {
-            d[sheet.DayStarted] = sheet;
-            return d.Values;
+            d[day.DayStarted] = day;
+            return d.Values.ToList();
           });
-      return update.Bind(SaveSheets);
+      Result<object> curry(TimeSpan s)
+      {
+        return update.Bind(l => SaveLogBook(new LogBook(l, s)));
+      }
+      return logBook.Map(d => d.Stash).Bind(curry);
+    }
+
+    public Result<object> SaveStash(TimeSpan stash)
+    {
+      return GetLogBook().Bind(b => SaveLogBook(new LogBook(b.Days, stash)));
+    }
+
+    public Result<IList<Day>> GetAllDays()
+    {
+      return GetLogBook().Map(b => b.Days);
     }
   }
 }

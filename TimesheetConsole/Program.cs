@@ -13,7 +13,6 @@ namespace TimesheetConsole
     public static string ProductOwner = "Aleksey";
 
     private static readonly Regex help = new Regex(@"^\s*(help|\/\?)\s*$");
-    private static readonly Regex run = new Regex(@"^\s*run\s*$");
     private static readonly Regex exit = new Regex(@"(^\s*$|^\s*exit\s*$)");
     private static readonly Regex time = new Regex(@"^\s*time\s*$");
     //todo make private
@@ -23,18 +22,18 @@ namespace TimesheetConsole
     private static readonly Regex setPause = new Regex(@"^\s*pause\s*(?<minutes>\d{1,3})\s*$");
     private static readonly Regex addTask = new Regex(@"^\s*add\s*(?<entry>.*$)");
     private static readonly Regex list = new Regex(@"^\s*list\s*(?<count>\s\d{1,3})?\s*$");
+    private static readonly Regex stash = new Regex(@"^\s*stash\s*$");
+    private static readonly Regex unstash = new Regex(@"^\s*unstash\s*$");
 
     private static readonly MainRepository repository = new MainRepository();
 
     private static readonly HelpInfo helpCommand = new HelpInfo("Help", help);
-    private static readonly StartWorkingDay startDayCommand =
-      new StartWorkingDay("Start working day command", run, repository);
     private static readonly GetTime getTimeCommand =
       new GetTime("Get time command", time, repository);
     private static readonly TodaysSheet todaysSheetCommand =
-      new TodaysSheet("Today's sheet command", log, repository, startDayCommand);
+      new TodaysSheet("Today's sheet command", log, repository);
     private static readonly AddTask addTaskCommand =
-      new AddTask("Add task command", addTask,repository, startDayCommand, todaysSheetCommand);
+      new AddTask("Add task command", addTask,repository, todaysSheetCommand);
     private static readonly DeleteTask deleteTaskCommand =
       new DeleteTask("Delete task command", deleteTask, repository, todaysSheetCommand);
     private static readonly SetTaskDuration setTaskDurationCommand =
@@ -43,18 +42,23 @@ namespace TimesheetConsole
       new ListSheets("List sheets command", list, repository);
     private static readonly SetPause setPauseCommand =
       new SetPause("Set pause command", setPause, repository, todaysSheetCommand);
+    private static readonly Stash stashCommand=
+      new Stash("Stash", stash, repository, todaysSheetCommand);
+    private static readonly Unstash unstashCommand =
+      new Unstash("Unstash", unstash, repository, todaysSheetCommand);
 
     private static readonly IList<IAppCommand> allCommands = new List<IAppCommand>
     {
       helpCommand,
-      startDayCommand,
       getTimeCommand,
       todaysSheetCommand,
       addTaskCommand,
       deleteTaskCommand,
       setTaskDurationCommand,
       listSheetsCommand,
-      setPauseCommand
+      setPauseCommand,
+      stashCommand,
+      unstashCommand
     };
 
     private static void DisplayResult(Result<string> commandResult)
