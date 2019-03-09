@@ -13,11 +13,21 @@ namespace DataAccess
 {
   public class MainRepository
   {
+#if DEBUG
     private readonly string fileName =
       Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
         "Daily logs",
         "Days.json");
+#else
+    private readonly string fileName =
+      Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        "Dropbox",
+        "LanitTercom",
+        "Timesheet",
+        "Days.json");
+#endif
 
     #region private methods
     private Result<LogBook> GetLogBook()

@@ -18,15 +18,18 @@ Available commands:
 time                    Tells how much time has passed since the working day
                         started and how much time is left until the 8h working
                         day end.
-log                     Displays the today's sheet.
+log                     Displays today's sheet.
+pause [-]<m>            Adds <m> minutes to the paused time
+                        (subtracts if negative).
 list [number of days]   Displays sheets for the last month or for the
-                        [number of days] if specified
-<i> <hours[.5]>         set duration of the task at index <i> in today's sheet
-del <i>                 delete the task at index <i> in today's sheet
-add <task>              add a new task entry
-stash...................stash unregistered time
-unstash.................get back unregistered time from stash
-exit                    exit the program";
+                        [number of days] if specified.
+<i> <hours[.5]>         Sets the duration of a task at index <i> in today's
+                        sheet. <hours> is an integer, [.5] is the half hour.
+del <i>                 Deletes a task at index <i> in today's sheet.
+add <task>              Adds a new task entry.
+stash                   Stashes unregistered time.
+unstash                 Gets back unregistered time from stash.
+exit                    Exits the program.";
       return Results.Success(info);
     }
   }

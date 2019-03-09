@@ -23,13 +23,14 @@ namespace TimesheetConsole.Commands
 
     public override Result<string> Execute(Match regexMatch)
     {
-      Result<object> setPause(Day sheet, TimeSpan p)
+      Result<object> addToPause(Day sheet, TimeSpan p)
       {
-        return repository.SaveTodaySheet(sheet.SetPause(p));
+        return repository.SaveTodaySheet(sheet.AddToPause(p));
       }
-      TimeSpan pause = TimeSpan.FromMinutes(int.Parse(regexMatch.Groups["minutes"].Value));
+      TimeSpan absPause = TimeSpan.FromMinutes(int.Parse(regexMatch.Groups["minutes"].Value));
+      TimeSpan pause = regexMatch.Groups["minus"].Success ? absPause.Negate() : absPause;
       return repository.GetStatus()
-        .Bind(s => setPause(s.Day, pause))
+        .Bind(s => addToPause(s.Day, pause))
         .Bind(_ => todaysSheet.Execute(Program.log.Match("log")));//Todo make normal parameters in Execute methods
     }
   }

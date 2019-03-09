@@ -19,7 +19,7 @@ namespace TimesheetConsole
     public static readonly Regex log = new Regex(@"^\s*log\s*$");
     private static readonly Regex deleteTask = new Regex(@"^\s*del\s+(?<index>\d{1,3})\.?\s*$");
     private static readonly Regex setDuration = new Regex(@"^(?<index>\d{1,3})\.?\s*(?<hours>\d{1,3})(?<fraction>\.5)?$");
-    private static readonly Regex setPause = new Regex(@"^\s*pause\s*(?<minutes>\d{1,3})\s*$");
+    private static readonly Regex setPause = new Regex(@"^\s*pause\s*(?<minus>-)?\s*(?<minutes>\d{1,3})\s*$");
     private static readonly Regex addTask = new Regex(@"^\s*add\s*(?<entry>.*$)");
     private static readonly Regex list = new Regex(@"^\s*list\s*(?<count>\s\d{1,3})?\s*$");
     private static readonly Regex stash = new Regex(@"^\s*stash\s*$");
@@ -65,9 +65,10 @@ namespace TimesheetConsole
     {
       if (!commandResult.IsSuccess)
       {
+        ConsoleColor original = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(string.Join(Environment.NewLine, commandResult.Messages));
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = original;
       }
       else
       {

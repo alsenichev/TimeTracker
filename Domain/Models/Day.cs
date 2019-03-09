@@ -25,9 +25,9 @@ namespace Domain.Models
       return new Day(DayStarted, Break, Tasks);
     }
 
-    public Day SetPause(TimeSpan pause)
+    public Day AddToPause(TimeSpan pause)
     {
-      return new Day(DayStarted, pause, Tasks);
+      return new Day(DayStarted, Break + pause, Tasks);
     }
 
     public Day SetTaskDuration(int i, TimeSpan duration)
