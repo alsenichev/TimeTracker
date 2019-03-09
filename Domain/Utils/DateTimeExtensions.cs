@@ -17,5 +17,14 @@ namespace Domain.Utils
       return RoundToNearest(dt, TimeSpan.FromMinutes(1));
     }
 
+    /// <summary>
+    /// Returns the part of the TimeSpan which is a multiple of 30 minutes.
+    /// </summary>
+    public static TimeSpan TaskAssignable(this TimeSpan ts)
+    {
+      var delta = ts.Ticks % TimeSpan.FromMinutes(30).Ticks;
+      return TimeSpan.FromTicks(ts.Ticks - delta);
+    }
+
   }
 }

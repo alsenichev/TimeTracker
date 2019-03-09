@@ -23,25 +23,33 @@ namespace TimesheetConsole.Commands
 
     public override Result<string> Execute(Match regexMatch)
     {
-      Result<object> updateTaskDuration(Day day)
+      Result<object> updateTaskDuration(Status status)
       {
         int index = int.Parse(regexMatch.Groups["index"].Value) - 1;
-        if (day.Tasks == null || day.Tasks.Count <= index)
+        if (status.Day.Tasks == null || status.Day.Tasks.Count <= index)
         {
           return Results.Failure<object>($"There is no task at index {index + 1} in today's sheet.");
         }
-        int hours = int.Parse(regexMatch.Groups["hours"].Value);
-        bool fraction = regexMatch.Groups["fraction"].Success;
-        var absDuration = TimeSpan.FromHours(hours);
-        if (fraction)
+        TimeSpan duration;
+        if (regexMatch.Groups["time"].Success)
         {
-          absDuration += TimeSpan.FromMinutes(30);
+          int hours = int.Parse(regexMatch.Groups["hours"].Value);
+          bool fraction = regexMatch.Groups["fraction"].Success;
+          var absDuration = TimeSpan.FromHours(hours);
+          if (fraction)
+          {
+            absDuration += TimeSpan.FromMinutes(30);
+          }
+          duration = regexMatch.Groups["minus"].Success ? absDuration.Negate() : absDuration;
         }
-        var duration = regexMatch.Groups["minus"].Success ? absDuration.Negate() : absDuration;
-        return repository.SaveTodaySheet(day.AddToTaskDuration(index, duration));
+        else
+        {
+          duration = status.UnregisteredTime.TaskAssignable();
+        }
+        return repository.SaveTodaySheet(status.Day.AddToTaskDuration(index, duration));
       }
       return repository.GetStatus()
-        .Bind(s => updateTaskDuration(s.Day))
+        .Bind(updateTaskDuration)
         .Bind(_ => todaysSheet.Execute(null));
     }
   }
