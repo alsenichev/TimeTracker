@@ -47,11 +47,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\AddTask.cs" />
-    <Compile Include="Commands\GetTime.cs" />
     <Compile Include="Commands\HelpInfo.cs" />
     <Compile Include="Commands\IAppCommand.cs" />
     <Compile Include="Commands\ListSheets.cs" />
-    <Compile Include="Commands\Unstash.cs" />
+    <Compile Include="Commands\Expend.cs" />
     <Compile Include="Commands\Stash.cs" />
     <Compile Include="Commands\SetPause.cs" />
     <Compile Include="Commands\TodaysSheet.cs" />

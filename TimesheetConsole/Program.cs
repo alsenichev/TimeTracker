@@ -14,7 +14,6 @@ namespace TimesheetConsole
 
     private static readonly Regex help = new Regex(@"^\s*(help|\/\?)\s*$");
     private static readonly Regex exit = new Regex(@"(^\s*$|^\s*exit\s*$)");
-    private static readonly Regex time = new Regex(@"^\s*time\s*$");
     private static readonly Regex log = new Regex(@"^\s*log\s*$");
     private static readonly Regex deleteTask = new Regex(@"^\s*del\s+(?<index>\d{1,3})\.?\s*$");
     private static readonly Regex setDuration = new Regex(@"^(?<index>\d{1,3})\.?\s*(?<hours>\d{1,3})(?<fraction>\.5)?$");
@@ -22,13 +21,11 @@ namespace TimesheetConsole
     private static readonly Regex addTask = new Regex(@"^\s*add\s*(?<entry>.*$)");
     private static readonly Regex list = new Regex(@"^\s*list\s*(?<count>\s\d{1,3})?\s*$");
     private static readonly Regex stash = new Regex(@"^\s*stash\s*$");
-    private static readonly Regex unstash = new Regex(@"^\s*unstash\s*$");
+    private static readonly Regex expend = new Regex(@"^\s*expend\s*$");
 
     private static readonly MainRepository repository = new MainRepository();
 
     private static readonly HelpInfo helpCommand = new HelpInfo("Help", help);
-    private static readonly GetTime getTimeCommand =
-      new GetTime("Get time command", time, repository);
     private static readonly TodaysSheet todaysSheetCommand =
       new TodaysSheet("Today's sheet command", log, repository);
     private static readonly AddTask addTaskCommand =
@@ -43,13 +40,12 @@ namespace TimesheetConsole
       new SetPause("Set pause command", setPause, repository, todaysSheetCommand);
     private static readonly Stash stashCommand=
       new Stash("Stash", stash, repository, todaysSheetCommand);
-    private static readonly Unstash unstashCommand =
-      new Unstash("Unstash", unstash, repository, todaysSheetCommand);
+    private static readonly Expend expendCommand =
+      new Expend("Expend", expend, repository, todaysSheetCommand);
 
     private static readonly IList<IAppCommand> allCommands = new List<IAppCommand>
     {
       helpCommand,
-      getTimeCommand,
       todaysSheetCommand,
       addTaskCommand,
       deleteTaskCommand,
@@ -57,7 +53,7 @@ namespace TimesheetConsole
       listSheetsCommand,
       setPauseCommand,
       stashCommand,
-      unstashCommand
+      expendCommand
     };
 
     private static void DisplayResult(Result<string> commandResult)

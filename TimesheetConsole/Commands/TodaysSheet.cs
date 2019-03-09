@@ -11,25 +11,58 @@ namespace TimesheetConsole.Commands
   {
     private readonly MainRepository repository;
 
+    #region private methods
+
     private static string FormatStatus(Status status, bool includeHeader)
     {
-      string startedAt = GetTime.FormatStatus(status);
-      string header = includeHeader ? $"{startedAt}{Environment.NewLine}{Environment.NewLine}" : "";
+      string header = includeHeader
+        ? $"{MoreToWorkOrOvertime(status)}{Environment.NewLine}{Environment.NewLine}"
+        : "";
       if (status.Day.Tasks == null || status.Day.Tasks.Count == 0)
       {
         return $"{header}No tasks created today.{Environment.NewLine}" +
-               $"Unregistered time {GetTime.FormatTimeSpan(status.UnregisteredTime)}.";
+               $"Unregistered time {FormatTimeSpan(status.UnregisteredTime)}.";
       }
-
       var formattedEntries = status.Day.Tasks.Select((e, i) =>
-        $"{i + 1}. {e.Name}, duration: {GetTime.FormatTimeSpan(e.Duration)}");
+        $"{i + 1}. {e.Name}, duration: {FormatTimeSpan(e.Duration)}");
       var entries = string.Join(Environment.NewLine, formattedEntries);
       string stashPostfix = status.Stash > TimeSpan.Zero
-        ? $" Stashed time {GetTime.FormatTimeSpan(status.Stash)}."
+        ? $" Stashed time {FormatTimeSpan(status.Stash)}."
         : string.Empty;
       return
         $"{header}Here's the list of your tasks:{Environment.NewLine}{entries}{Environment.NewLine}" +
-        $"Totally {GetTime.FormatTimeSpan(status.RegisteredTime)}. Unregistered time {GetTime.FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix}";
+        $"Totally {FormatTimeSpan(status.RegisteredTime)}. Unregistered time {FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix}";
+    }
+
+    private static string MoreToWorkOrOvertime(Status status)
+    {
+      if (status.IsOvertime)
+      {
+        return Overtime(status);
+      }
+      else
+      {
+        return MoreToWork(status);
+      }
+    }
+
+    private static string MoreToWork(Status status)
+    {
+      string pausePostfix =
+        status.Pause == TimeSpan.Zero
+          ? string.Empty
+          : status.Pause > TimeSpan.Zero
+            ? $" and took a {FormatTimeSpan(status.Pause)} pause"
+            : $" and have {FormatTimeSpan(-status.Pause)} deposed";
+      return $@"You've started today at {status.StartedAt:t}{pausePostfix}.{Environment.NewLine}Your working day ends at {status.EndOfDay:t} in {FormatTimeSpan(status.Left)}.";
+    }
+
+    private static string Overtime(Status status)
+    {
+      string pausePostfix =
+        status.Pause.Equals(TimeSpan.Zero) ? string.Empty : $" and took a {FormatTimeSpan(status.Pause)} pause";
+      return
+        $"You've started today at {status.StartedAt:t}{pausePostfix}.{Environment.NewLine}It makes a {FormatTimeSpan(status.Overtime)} overtime.";
     }
 
     private Result<string> Execute(bool displayHeader)
@@ -38,6 +71,10 @@ namespace TimesheetConsole.Commands
         Results.Success(FormatStatus(sheet, displayHeader));
       return repository.GetStatus().Bind(formatSheet);
     }
+
+    #endregion
+
+    #region public methods
 
     public TodaysSheet(
       string name, Regex regex, MainRepository repository) : base(
@@ -60,5 +97,12 @@ namespace TimesheetConsole.Commands
     {
       return Execute(true);
     }
+
+    public static string FormatTimeSpan(TimeSpan time)
+    {
+      return $"{time.Hours}h {time.Minutes}m";
+    }
+
+    #endregion
   }
 }

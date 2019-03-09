@@ -20,11 +20,11 @@ namespace TimesheetConsole.Commands
       }
 
       var formattedEntries = day.Tasks.Select((e, i) =>
-        $"{i + 1}. {e.Name}, duration: {GetTime.FormatTimeSpan(e.Duration)}");
+        $"{i + 1}. {e.Name}, duration: {TodaysSheet.FormatTimeSpan(e.Duration)}");
       var entries = string.Join(Environment.NewLine, formattedEntries);
       var total = day.Tasks.Aggregate(TimeSpan.Zero, (a, c) => a + c.Duration);
       return
-        $"{header}{Environment.NewLine}{entries}{Environment.NewLine}Totally {GetTime.FormatTimeSpan(total)}";
+        $"{header}{Environment.NewLine}{entries}{Environment.NewLine}Totally {TodaysSheet.FormatTimeSpan(total)}";
     }
 
     public ListSheets(string name, Regex regex, MainRepository repository) : base(name, regex)

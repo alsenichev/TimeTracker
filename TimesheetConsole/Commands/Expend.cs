@@ -6,12 +6,12 @@ using Domain.Utils;
 
 namespace TimesheetConsole.Commands
 {
-  class Unstash : AppCommandBase
+  class Expend : AppCommandBase
   {
     private readonly MainRepository repository;
     private readonly TodaysSheet todaysSheet;
 
-    public Unstash(
+    public Expend(
       string name,
       Regex regex,
       MainRepository repository,
