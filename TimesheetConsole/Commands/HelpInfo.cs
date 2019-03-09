@@ -18,8 +18,9 @@ Available commands:
 log                     Displays today's sheet.
 pause [-]<m>            Adds <m> minutes to the paused time
                         (subtracts if negative).
-<i> <hours[.5]>         Sets the duration of a task at index <i> in today's
-                        sheet. <hours> is an integer, [.5] is the half hour.
+<i> [-]<hours[.5]>      Adds to (negates from if [-]) the duration of a task at
+                        index <i> in today's sheet.
+                        <hours> is an integer, [.5] is the half hour.
 del <i>                 Deletes a task at index <i> in today's sheet.
 add <task>              Adds a new task entry.
 stash                   Stashes unregistered time.

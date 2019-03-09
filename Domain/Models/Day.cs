@@ -30,9 +30,9 @@ namespace Domain.Models
       return new Day(DayStarted, Break + pause, Tasks);
     }
 
-    public Day SetTaskDuration(int i, TimeSpan duration)
+    public Day AddToTaskDuration(int i, TimeSpan duration)
     {
-      Tasks[i] = new TaskEntry(Tasks[i].Name, duration);
+      Tasks[i] = new TaskEntry(Tasks[i].Name, Tasks[i].Duration + duration);
       return new Day(DayStarted, Break, Tasks);
     }
   }

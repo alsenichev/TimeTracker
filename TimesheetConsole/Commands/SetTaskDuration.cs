@@ -32,12 +32,13 @@ namespace TimesheetConsole.Commands
         }
         int hours = int.Parse(regexMatch.Groups["hours"].Value);
         bool fraction = regexMatch.Groups["fraction"].Success;
-        var duration = TimeSpan.FromHours(hours);
+        var absDuration = TimeSpan.FromHours(hours);
         if (fraction)
         {
-          duration += TimeSpan.FromMinutes(30);
+          absDuration += TimeSpan.FromMinutes(30);
         }
-        return repository.SaveTodaySheet(day.SetTaskDuration(index, duration));
+        var duration = regexMatch.Groups["minus"].Success ? absDuration.Negate() : absDuration;
+        return repository.SaveTodaySheet(day.AddToTaskDuration(index, duration));
       }
       return repository.GetStatus()
         .Bind(s => updateTaskDuration(s.Day))
