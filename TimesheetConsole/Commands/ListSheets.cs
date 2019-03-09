@@ -14,8 +14,7 @@ namespace TimesheetConsole.Commands
     private static string FormatLog(Day day)
     {
       string header = $"Started on {day.DayStarted:D} at {day.DayStarted:t}";
-      // todo - maybe consider Option for TaskEntries property, but possibly would need a separate model for Json serialization
-      if (day.Tasks == null || day.Tasks.Count == 0)
+      if (day.Tasks.Count == 0)
       {
         return $"{header}{Environment.NewLine}No tasks created.";
       }

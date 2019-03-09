@@ -28,11 +28,11 @@ namespace TimesheetConsole.Commands
         if (status.Stash > TimeSpan.Zero)
         {
           return repository.SaveStash(TimeSpan.Zero)
-            .Bind(_ => todaysSheet.Execute(Program.log.Match("log")));
+            .Bind(_ => todaysSheet.ExecuteWithHeader());
         }
         else
         {
-          return Results.Success("Nothing to unstash.");
+          return Results.Success("Nothing to remove from stash.");
         }
       }
       return repository.GetStatus().Bind(SaveStash);

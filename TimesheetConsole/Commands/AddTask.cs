@@ -31,7 +31,7 @@ namespace TimesheetConsole.Commands
       }
 
       return repository.GetStatus()
-        .Bind(createTask).Bind(_ => todaysSheet.Execute(null));
+        .Bind(createTask).Bind(_ => todaysSheet.ExecuteWithNoHeader());
     }
   }
 }

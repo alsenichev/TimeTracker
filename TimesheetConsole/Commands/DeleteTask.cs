@@ -35,7 +35,7 @@ namespace TimesheetConsole.Commands
 
       return repository.GetStatus()
         .Bind(s => deleteTask(s.Day))
-        .Bind(_ => todaysSheet.Execute(null));
+        .Bind(_ => todaysSheet.ExecuteWithNoHeader());
     }
   }
 }

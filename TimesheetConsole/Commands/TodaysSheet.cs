@@ -32,6 +32,13 @@ namespace TimesheetConsole.Commands
         $"Totally {GetTime.FormatTimeSpan(status.RegisteredTime)}. Unregistered time {GetTime.FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix}";
     }
 
+    private Result<string> Execute(bool displayHeader)
+    {
+      Result<string> formatSheet(Status sheet) =>
+        Results.Success(FormatStatus(sheet, displayHeader));
+      return repository.GetStatus().Bind(formatSheet);
+    }
+
     public TodaysSheet(
       string name, Regex regex, MainRepository repository) : base(
       name, regex)
@@ -41,12 +48,17 @@ namespace TimesheetConsole.Commands
 
     public override Result<string> Execute(Match regexMatch)
     {
-      // todo - a bit of a hack here. to make it correct we would need an Execute<T> signature
-      bool displayHeader = regexMatch != null;
-      Result<string> formatSheet(Status sheet) =>
-        Results.Success(FormatStatus(sheet, displayHeader));
+      return ExecuteWithHeader();
+    }
 
-      return repository.GetStatus().Bind(formatSheet);
+    public Result<string> ExecuteWithNoHeader()
+    {
+      return Execute(false);
+    }
+
+    public Result<string> ExecuteWithHeader()
+    {
+      return Execute(true);
     }
   }
 }

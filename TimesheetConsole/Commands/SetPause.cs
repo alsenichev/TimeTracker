@@ -31,7 +31,7 @@ namespace TimesheetConsole.Commands
       TimeSpan pause = regexMatch.Groups["minus"].Success ? absPause.Negate() : absPause;
       return repository.GetStatus()
         .Bind(s => addToPause(s.Day, pause))
-        .Bind(_ => todaysSheet.Execute(Program.log.Match("log")));//Todo make normal parameters in Execute methods
+        .Bind(_ => todaysSheet.ExecuteWithHeader());
     }
   }
 }

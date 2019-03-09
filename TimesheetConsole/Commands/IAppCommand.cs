@@ -22,9 +22,8 @@ namespace TimesheetConsole.Commands
 
     public Regex CommandRegex { get; }
 
-    public string Name { get; set; }
+    public string Name { get; }
 
-    //Todo not a Match but a full-blown parameter object.
     public abstract Result<string> Execute(Match regexMatch);
   }
 }

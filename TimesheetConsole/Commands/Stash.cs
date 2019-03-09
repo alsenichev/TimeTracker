@@ -28,7 +28,7 @@ namespace TimesheetConsole.Commands
         if (status.UnregisteredTime > TimeSpan.FromMinutes(1))
         {
           return repository.SaveStash(status.Stash + status.UnregisteredTime)
-            .Bind(_ => todaysSheet.Execute(Program.log.Match("log")));
+            .Bind(_ => todaysSheet.ExecuteWithHeader());
         }
         else
         {

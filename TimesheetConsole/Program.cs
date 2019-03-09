@@ -15,8 +15,7 @@ namespace TimesheetConsole
     private static readonly Regex help = new Regex(@"^\s*(help|\/\?)\s*$");
     private static readonly Regex exit = new Regex(@"(^\s*$|^\s*exit\s*$)");
     private static readonly Regex time = new Regex(@"^\s*time\s*$");
-    //todo make private
-    public static readonly Regex log = new Regex(@"^\s*log\s*$");
+    private static readonly Regex log = new Regex(@"^\s*log\s*$");
     private static readonly Regex deleteTask = new Regex(@"^\s*del\s+(?<index>\d{1,3})\.?\s*$");
     private static readonly Regex setDuration = new Regex(@"^(?<index>\d{1,3})\.?\s*(?<hours>\d{1,3})(?<fraction>\.5)?$");
     private static readonly Regex setPause = new Regex(@"^\s*pause\s*(?<minus>-)?\s*(?<minutes>\d{1,3})\s*$");
@@ -79,7 +78,7 @@ namespace TimesheetConsole
     private static Result<string> ExecuteCommand(string input)
     {
       var matches = allCommands.Select(c =>
-      new {Match = c.CommandRegex.Match(input), Command = c}).Where(m => m.Match.Success).ToList();
+      new { Match = c.CommandRegex.Match(input), Command = c }).Where(m => m.Match.Success).ToList();
       switch (matches.Count)
       {
           case 0:
