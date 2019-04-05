@@ -31,7 +31,7 @@ namespace TimesheetConsole.Commands
         : string.Empty;
       return
         $"{header}Here's the list of your tasks:{Environment.NewLine}{entries}{Environment.NewLine}" +
-        $"Totally {FormatTimeSpan(status.RegisteredTime)}. Unregistered time {FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix}";
+        $"Unregistered time {FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix} Totally {FormatTimeSpan(status.RegisteredTime)}.";
     }
 
     private static string MoreToWorkOrOvertime(Status status)
