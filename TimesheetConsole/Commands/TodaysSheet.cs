@@ -18,17 +18,18 @@ namespace TimesheetConsole.Commands
       string header = includeHeader
         ? $"{MoreToWorkOrOvertime(status)}{Environment.NewLine}{Environment.NewLine}"
         : "";
-      if (status.Day.Tasks == null || status.Day.Tasks.Count == 0)
-      {
-        return $"{header}No tasks created today.{Environment.NewLine}" +
-               $"Unregistered time {FormatTimeSpan(status.UnregisteredTime)}.";
-      }
-      var formattedEntries = status.Day.Tasks.Select((e, i) =>
-        $"{i + 1}. {e.Name}, duration: {FormatTimeSpan(e.Duration)}");
-      var entries = string.Join(Environment.NewLine, formattedEntries);
       string stashPostfix = status.Stash > TimeSpan.Zero
         ? $" Stashed time {FormatTimeSpan(status.Stash)}."
         : string.Empty;
+      if (status.Day.Tasks == null || status.Day.Tasks.Count == 0)
+      {
+        return $"{header}No tasks created today.{Environment.NewLine}" +
+               $"Unregistered time {FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix}";
+      }
+
+      var formattedEntries = status.Day.Tasks.Select((e, i) =>
+        $"{i + 1}. {e.Name}, duration: {FormatTimeSpan(e.Duration)}");
+      var entries = string.Join(Environment.NewLine, formattedEntries);
       return
         $"{header}Here's the list of your tasks:{Environment.NewLine}{entries}{Environment.NewLine}" +
         $"Unregistered time {FormatTimeSpan(status.UnregisteredTime)}.{stashPostfix} Totally {FormatTimeSpan(status.RegisteredTime)}.";
@@ -48,24 +49,27 @@ namespace TimesheetConsole.Commands
 
     private static string MoreToWork(Status status)
     {
-      return $"You've started today at {status.StartedAt:t}{PausePostfix(status)}" +
+      return $"You've started today at {status.StartedAt:t}{PausePostfix(status)}{DepositPostfix(status)}" +
              $".{Environment.NewLine}Your working day ends at {status.EndOfDay:t} in {FormatTimeSpan(status.Left)}.";
     }
 
     private static string PausePostfix(Status status)
     {
-      string pausePostfix =
-        status.Pause == TimeSpan.Zero
-          ? string.Empty
-          : status.Pause > TimeSpan.Zero
-            ? $" and took a {FormatTimeSpan(status.Pause)} pause"
-            : $" and have {FormatTimeSpan(-status.Pause)} deposed";
-      return pausePostfix;
+      return status.Pause == TimeSpan.Zero
+        ? string.Empty
+        : $"{(status.Deposit == TimeSpan.Zero ?" and":",")} took a {FormatTimeSpan(status.Pause)} pause";
+    }
+
+    private static string DepositPostfix(Status status)
+    {
+      return status.Deposit == TimeSpan.Zero
+        ? string.Empty
+        : $" and have {FormatTimeSpan(status.Deposit)} deposed";
     }
 
     private static string Overtime(Status status)
     {
-      return $"You've started today at {status.StartedAt:t}{PausePostfix(status)}" +
+      return $"You've started today at {status.StartedAt:t}{PausePostfix(status)}{DepositPostfix(status)}" +
              $".{Environment.NewLine}It makes a {FormatTimeSpan(status.Overtime)} overtime.";
     }
 

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Domain.Models
 {
   public struct Day
   {
-    public Day(DateTime dayStarted, TimeSpan @break, IList<TaskEntry> tasks)
+    public Day(DateTime dayStarted, TimeSpan @break, TimeSpan deposit, IList<TaskEntry> tasks)
     {
       DayStarted = dayStarted;
       Break = @break;
+      Deposit = deposit;
       Tasks = tasks;
     }
 
@@ -17,23 +17,30 @@ namespace Domain.Models
 
     public TimeSpan Break { get; }
 
+    public TimeSpan Deposit { get; }
+
     public IList<TaskEntry> Tasks { get; }
 
     public Day AddTask(TaskEntry task)
     {
       Tasks.Add(task);
-      return new Day(DayStarted, Break, Tasks);
+      return new Day(DayStarted, Break, Deposit, Tasks);
     }
 
     public Day AddToPause(TimeSpan pause)
     {
-      return new Day(DayStarted, Break + pause, Tasks);
+      TimeSpan result = Break + pause;
+      if (result < TimeSpan.Zero)
+      {
+        result = TimeSpan.Zero;
+      }
+      return new Day(DayStarted, result, Deposit, Tasks);
     }
 
     public Day AddToTaskDuration(int i, TimeSpan duration)
     {
       Tasks[i] = new TaskEntry(Tasks[i].Name, Tasks[i].Duration + duration);
-      return new Day(DayStarted, Break, Tasks);
+      return new Day(DayStarted, Break, Deposit, Tasks);
     }
   }
 }

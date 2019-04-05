@@ -74,11 +74,11 @@ namespace DataAccess
 
     private Result<Status> OfNewDay(LogBook logBook)
     {
-      // stash becomes a negative pause for a new day
-      var day = new Day(DateTime.Now.RoundSeconds(), -logBook.Stash, new List<TaskEntry>());
+      // stash becomes a deposit for a new day
+      var day = new Day(DateTime.Now.RoundSeconds(), TimeSpan.Zero, logBook.Stash, new List<TaskEntry>());
       var days = logBook.Days;
       days.Add(day);
-      // reset stash after it was converted into a negative pause for the new day
+      // reset stash after it was converted into the deposit for a new day
       var toSave = new LogBook(days, TimeSpan.Zero);
       // don't like the idea to recursively call GetStatus(), because if we
       // might save log and mistakenly read it from different places, we'll get an infinite recursion

@@ -12,6 +12,7 @@ namespace DataAccess.Mappers
       return new Day(
         record.DayStarted,
         record.Break,
+        record.Deposit,
         record.Tasks?.Select(t => TaskMapper.Map(t)).ToList() ?? new List<TaskEntry>());
     }
 
@@ -20,6 +21,7 @@ namespace DataAccess.Mappers
       return new DayRecord
       {
         Break = day.Break,
+        Deposit = day.Deposit,
         DayStarted = day.DayStarted,
         Tasks = day.Tasks.Select(t => TaskMapper.Map(t)).ToList()
       };
