@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\AddTask.cs" />
+    <Compile Include="Commands\FixStartTime.cs" />
     <Compile Include="Commands\HelpInfo.cs" />
     <Compile Include="Commands\IAppCommand.cs" />
     <Compile Include="Commands\ListSheets.cs" />

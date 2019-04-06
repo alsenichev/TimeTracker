@@ -109,17 +109,17 @@ namespace DataAccess
     public Result<object> SaveTodaySheet(Day day)
     {
       var logBook = GetLogBook();
-      var dict = logBook.Map(b => b.Days).Map(s => s.ToDictionary(k => k.DayStarted));
-      Result<List<Day>> update = dict.Map(d =>
-          {
-            d[day.DayStarted] = day;
-            return d.Values.ToList();
-          });
-      Result<object> curry(TimeSpan s)
-      {
-        return update.Bind(l => SaveLogBook(new LogBook(l, s)));
-      }
-      return logBook.Map(d => d.Stash).Bind(curry);
+      Result<List<Day>> updatedDays = logBook
+        .Map(b => b.Days)
+        .Map(s => s.ToDictionary(k => k.DayStarted.Date))
+        .Map(d =>
+            {
+              d[day.DayStarted.Date] = day;
+              return d.Values.ToList();
+            });
+      Result<object> saveLogBook(TimeSpan stash) =>
+        updatedDays.Bind(days => SaveLogBook(new LogBook(days, stash)));
+      return logBook.Map(d => d.Stash).Bind(saveLogBook);
     }
 
     public Result<object> SaveStash(TimeSpan stash)

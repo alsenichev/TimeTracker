@@ -34,6 +34,7 @@ namespace Domain.Models
       {
         result = TimeSpan.Zero;
       }
+
       return new Day(DayStarted, result, Deposit, Tasks);
     }
 
@@ -41,6 +42,11 @@ namespace Domain.Models
     {
       Tasks[i] = new TaskEntry(Tasks[i].Name, Tasks[i].Duration + duration);
       return new Day(DayStarted, Break, Deposit, Tasks);
+    }
+
+    public Day FixStartTime(DateTime newTime)
+    {
+      return new Day(newTime, Break, Deposit, Tasks);
     }
   }
 }
