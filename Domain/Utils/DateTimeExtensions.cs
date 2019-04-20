@@ -18,12 +18,21 @@ namespace Domain.Utils
     }
 
     /// <summary>
-    /// Returns the part of the TimeSpan which is a multiple of 30 minutes.
+    /// Old way: returns the part of the TimeSpan which is a multiple of 30 minutes.
+    /// Modern way: rounds up to the nearest 30 minutes.
     /// </summary>
     public static TimeSpan TaskAssignable(this TimeSpan ts)
     {
-      var delta = ts.Ticks % TimeSpan.FromMinutes(30).Ticks;
-      return TimeSpan.FromTicks(ts.Ticks - delta);
+      TimeSpan step = TimeSpan.FromMinutes(30);
+      // 40|50
+      // delta = 10|20
+      var delta = ts.Ticks % step.Ticks;
+      // false|true
+      bool roundUp = delta > step.Ticks / 2;
+      // 0|30
+      var offset = roundUp ? step.Ticks : 0;
+      // 40 + 0 - 10 = 30 | 50 + 30 - 20 = 60
+      return TimeSpan.FromTicks(ts.Ticks + offset - delta);
     }
 
   }
