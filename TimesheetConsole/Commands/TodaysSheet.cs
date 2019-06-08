@@ -18,7 +18,7 @@ namespace TimesheetConsole.Commands
       string header = includeHeader
         ? $"{MoreToWorkOrOvertime(status)}{Environment.NewLine}{Environment.NewLine}"
         : "";
-      string stashPostfix = status.Stash > TimeSpan.Zero
+      string stashPostfix = status.Stash != TimeSpan.Zero
         ? $" Stashed time {FormatTimeSpan(status.Stash)}."
         : string.Empty;
       if (status.Day.Tasks == null || status.Day.Tasks.Count == 0)

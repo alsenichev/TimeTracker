@@ -25,15 +25,8 @@ namespace TimesheetConsole.Commands
     {
       Result<string> SaveStash(Status status)
       {
-        if (status.Stash > TimeSpan.Zero)
-        {
-          return repository.SaveStash(TimeSpan.Zero)
-            .Bind(_ => todaysSheet.ExecuteWithHeader());
-        }
-        else
-        {
-          return Results.Success("Nothing to remove from stash.");
-        }
+        return repository.SaveStash(TimeSpan.Zero)
+          .Bind(_ => todaysSheet.ExecuteWithHeader());
       }
       return repository.GetStatus().Bind(SaveStash);
     }

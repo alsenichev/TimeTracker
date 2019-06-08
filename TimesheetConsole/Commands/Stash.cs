@@ -25,15 +25,9 @@ namespace TimesheetConsole.Commands
     {
       Result<string> SaveStash(Status status)
       {
-        if (status.UnregisteredTime > TimeSpan.FromMinutes(1))
-        {
-          return repository.SaveStash(status.Stash + status.UnregisteredTime)
-            .Bind(_ => todaysSheet.ExecuteWithHeader());
-        }
-        else
-        {
-          return Results.Success("Nothing to stash.");
-        }
+        return repository
+          .SaveStash(status.Stash + status.UnregisteredTime)
+          .Bind(_ => todaysSheet.ExecuteWithHeader());
       }
       return repository.GetStatus().Bind(SaveStash);
     }
