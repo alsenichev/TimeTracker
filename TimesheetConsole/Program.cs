@@ -97,7 +97,7 @@ namespace TimesheetConsole
       for (;;)
       {
         Console.WriteLine();
-        var input = Console.ReadLine();
+        string input = Console.ReadLine();
         if (exit.IsMatch(input??string.Empty))
         {
           break;

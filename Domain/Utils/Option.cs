@@ -26,39 +26,13 @@ namespace Domain.Utils
     }
 
     /// <summary>
-    /// Creates Option.Some if the underlying value is not null,
-    /// Option.None otherwise.
-    /// </summary>
-    public static Option<T> NotNull<T>(T value) where T : class
-    {
-      if (value == null)
-      {
-        return None<T>();
-      }
-      else
-      {
-        return Some(value);
-      }
-    }
-
-    /// <summary>
     /// Creates and Option.Some if the enumerable is not empty,
     /// Option.None otherwise.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="enumerable"></param>
-    /// <returns></returns>
     public static Option<IList<T>> NonEmpty<T>(IEnumerable<T> enumerable)
     {
       var value = enumerable as IList<T> ?? enumerable.ToList();
-      if (value.Any())
-      {
-        return Some(value);
-      }
-      else
-      {
-        return None<IList<T>>();
-      }
+      return value.Any() ? Some(value) : None<IList<T>>();
     }
 
     /// <summary>
@@ -68,14 +42,7 @@ namespace Domain.Utils
     /// <returns></returns>
     public static Option<T> Of<T>(T value, Func<T, bool> predicate)
     {
-      if (predicate(value))
-      {
-        return Some(value);
-      }
-      else
-      {
-        return None<T>();
-      }
+      return predicate(value) ? Some(value) : None<T>();
     }
 
     /// <summary>
@@ -83,14 +50,7 @@ namespace Domain.Utils
     /// </summary>
     public static T ValueOrDefault<T>(this Option<T> option)
     {
-      if (option.IsSome)
-      {
-        return option.Value;
-      }
-      else
-      {
-        return default(T);
-      }
+      return option.IsSome ? option.Value : default;
     }
 
     /// <summary>
@@ -100,14 +60,7 @@ namespace Domain.Utils
     public static TResult Fold<T, TResult>(this Option<T> option, Func<T, TResult> fSome,
       Func<TResult> fNone)
     {
-      if (option.IsSome)
-      {
-        return fSome(option.Value);
-      }
-      else
-      {
-        return fNone();
-      }
+      return option.IsSome ? fSome(option.Value) : fNone();
     }
 
     /// <summary>
@@ -141,7 +94,7 @@ namespace Domain.Utils
     public static Option<TResult> Bind<T, TResult>(this Option<T> option,
       Func<T, Option<TResult>> fSome)
     {
-      Func<Option<TResult>> fNone = () => None<TResult>();
+      Option<TResult> fNone() => None<TResult>();
       return option.Fold(fSome, fNone);
     }
   }
@@ -149,11 +102,8 @@ namespace Domain.Utils
   /// <summary>
   /// Stores the T value and indicates that it exists.
   /// Use static methods of the <see cref="Options" /> class to construct
-  /// and option.
+  /// the option.
   /// </summary>
-  // ReSharper disable once InconsistentNaming
-  // ... we want to hide the constructors of Option behind the interface,
-  // but we don't want to attract attention to that fact.
   public struct Option<T>
   {
     #region enums
@@ -174,22 +124,20 @@ namespace Domain.Utils
     #endregion
 
     #region private methods
-
     /// <summary>
     /// We do not expose the constructor.
     /// </summary>
-    Option(OptionType optionType, T value)
+    private Option(OptionType optionType, T value)
     {
       this.optionType = optionType;
-      this.value = value;
+      this.Value = value;
     }
 
     #endregion
 
     #region private fields
 
-    readonly OptionType optionType;
-    readonly T value;
+    private readonly OptionType optionType;
 
     #endregion
 
@@ -197,7 +145,7 @@ namespace Domain.Utils
 
     internal static Option<T> None()
     {
-      return new Option<T>(OptionType.None, default(T));
+      return new Option<T>(OptionType.None, default);
     }
 
     internal static Option<T> Some(T value)
@@ -222,7 +170,7 @@ namespace Domain.Utils
     /// <summary>
     /// The underlying value.
     /// </summary>
-    public T Value => value;
+    public T Value { get; }
 
     public override string ToString()
     {
