@@ -50,7 +50,7 @@ namespace TimesheetConsole.Commands
       }
       return repository.GetStatus()
         .Bind(updateTaskDuration)
-        .Bind(_ => todaysSheet.Execute(null));
+        .Bind(_ => todaysSheet.Execute(Match.Empty));
     }
   }
 }

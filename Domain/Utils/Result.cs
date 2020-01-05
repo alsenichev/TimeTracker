@@ -38,7 +38,10 @@ namespace Domain.Utils
     /// </summary>
     public static Result<T> Failure<T>(IEnumerable<string> messages)
     {
-      return new Result<T>(default(T), false, messages);
+      if (typeof(T).IsConstructedGenericType)
+      {
+      }
+      return new Result<T>((T) new object(), false, messages);
     }
 
     /// <summary>
@@ -48,7 +51,7 @@ namespace Domain.Utils
     /// </summary>
     public static Result<T> Failure<T>(string message)
     {
-      return new Result<T>(default(T), false, new[] {message});
+      return new Result<T>((T) new object(), false, new[] {message});
     }
 
     /// <summary>

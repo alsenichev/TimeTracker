@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,6 +37,15 @@ namespace Domain.Utils
     }
 
     /// <summary>
+    /// Creates Option.Some if the underlying value is not null,
+    /// Option.None otherwise.
+    /// </summary>
+    public static Option<T> NotNull<T>(T? value) where T: class
+    {
+      return value == null ? None<T>() : Some(value);
+    }
+
+    /// <summary>
     /// Returns Option.Some if the value satisfies the predicate,
     /// Option.None otherwise.
     /// </summary>
@@ -46,14 +56,6 @@ namespace Domain.Utils
     }
 
     /// <summary>
-    /// Returns the underlying value if Some, default(Value) otherwise.
-    /// </summary>
-    public static T ValueOrDefault<T>(this Option<T> option)
-    {
-      return option.IsSome ? option.Value : default;
-    }
-
-    /// <summary>
     /// Returns the result of fSome function if Some,
     /// the result of fNone function otherwise.
     /// </summary>
@@ -61,6 +63,14 @@ namespace Domain.Utils
       Func<TResult> fNone)
     {
       return option.IsSome ? fSome(option.Value) : fNone();
+    }
+
+    /// <summary>
+    /// Returns the underlying value if Some, default(Value) otherwise.
+    /// </summary>
+    public static T ValueOrDefault<T>(this Option<T> option)
+    {
+      return option.IsSome ? option.Value : default;
     }
 
     /// <summary>
@@ -145,7 +155,7 @@ namespace Domain.Utils
 
     internal static Option<T> None()
     {
-      return new Option<T>(OptionType.None, default);
+      return new Option<T>(OptionType.None, (T) new object());
     }
 
     internal static Option<T> Some(T value)

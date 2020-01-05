@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using Domain.Models;
 
@@ -12,6 +13,6 @@ namespace DataAccess.Models
 
     public TimeSpan Deposit { get; set; }
 
-    public IList<TaskRecord> Tasks { get; set; }
+    public IList<TaskRecord>? Tasks { get; set; }
   }
 }
