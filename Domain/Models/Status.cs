@@ -9,7 +9,7 @@ namespace Domain.Models
   /// - Time started is immutable.
   /// - Task durations are not negative.
   /// - Pause can not be negative.
-  /// - Duration is how many time passed since day started (can only grow).
+  /// - Duration is how much time passed since day started (can only grow).
   /// - CleanTime = Duration - Pause + Deposit
   /// - Stash + Unregistered + Registered = CleanTime
   /// - When a new Day is created, Stash becomes a Deposit

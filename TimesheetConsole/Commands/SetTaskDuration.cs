@@ -33,7 +33,10 @@ namespace TimesheetConsole.Commands
         TimeSpan duration;
         if (regexMatch.Groups["time"].Success)
         {
-          int hours = int.Parse(regexMatch.Groups["hours"].Value);
+          if (!int.TryParse(regexMatch.Groups["hours"].Value, out var hours))
+          {
+            hours = 0;
+          }
           bool fraction = regexMatch.Groups["fraction"].Success;
           var absDuration = TimeSpan.FromHours(hours);
           if (fraction)
