@@ -16,7 +16,8 @@ namespace TimesheetConsole
     private static readonly Regex exit = new Regex(@"^\s*exit\s*$");
     private static readonly Regex log = new Regex(@"(^\s*$|^\s*log\s*$)");
     private static readonly Regex deleteTask = new Regex(@"^\s*del\s+(?<index>\d{1,3})\.?\s*$");
-    private static readonly Regex setDuration = new Regex(@"^\s*(?<index>[1-9]\d{0,2})\s+(?<time>\s*(?<minus>-)?\s*(?<hours>\d{0,2})(?<fraction>\.5)?)?$");
+    private static readonly Regex setDuration =
+      new Regex(@"^(?<index>[1-9]\d{0,2})(?<time>\s*(?<minus>-)?\s*(?<hours>\d{1,2})(?<fraction>\.5)?)?$");
     private static readonly Regex setPause = new Regex(@"^\s*pause\s*(?<minus>-)?\s*(?<minutes>\d{1,3})\s*$");
     private static readonly Regex addTask = new Regex(@"^\s*add\s*(?<entry>.*$)");
     private static readonly Regex list = new Regex(@"^\s*list\s*(?<count>\s\d{1,3})?\s*$");
