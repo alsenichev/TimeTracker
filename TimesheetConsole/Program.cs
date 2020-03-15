@@ -23,6 +23,7 @@ namespace TimesheetConsole
     private static readonly Regex list = new Regex(@"^\s*list\s*(?<count>\s\d{1,3})?\s*$");
     private static readonly Regex stash = new Regex(@"^\s*stash\s*$");
     private static readonly Regex expend = new Regex(@"^\s*expend\s*$");
+    private static readonly Regex continueWork = new Regex(@"^\s*cont(inue)?\s*$");
     private static readonly Regex fixStartTime = new Regex(@"^\s*fix\s*(?<hour>\d{1,2})\s*:\s*(?<minute>\d{1,2})\s*$");
 
     private static readonly MainRepository repository = new MainRepository();
@@ -44,6 +45,8 @@ namespace TimesheetConsole
       new Stash("Stash", stash, repository, todaysSheetCommand);
     private static readonly Expend expendCommand =
       new Expend("Expend", expend, repository, todaysSheetCommand);
+    private static readonly Continue continueWorkCommand =
+      new Continue("Continue", continueWork, repository, todaysSheetCommand);
     private static readonly FixStartTime fixStartTimeCommand = 
       new FixStartTime("Fix start time command", fixStartTime, repository, todaysSheetCommand);
 
@@ -58,6 +61,7 @@ namespace TimesheetConsole
       setPauseCommand,
       stashCommand,
       expendCommand,
+      continueWorkCommand,
       fixStartTimeCommand
     };
 
