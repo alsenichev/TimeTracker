@@ -15,9 +15,10 @@ namespace TimesheetConsole.Commands
 
     private static string FormatStatus(Status status, bool includeHeader)
     {
+      string when = DateTime.Now.ToString("dddd, dd MMMM HH:mm");
       string header = includeHeader
-        ? $"{MoreToWorkOrOvertime(status)}{Environment.NewLine}{Environment.NewLine}"
-        : "";
+        ? $"{when}.{Environment.NewLine}{MoreToWorkOrOvertime(status)}{Environment.NewLine}{Environment.NewLine}"
+        : $"{when}{Environment.NewLine}";
       string stashPostfix = status.Stash != TimeSpan.Zero
         ? $" Stashed time {FormatTimeSpan(status.Stash)}."
         : string.Empty;
