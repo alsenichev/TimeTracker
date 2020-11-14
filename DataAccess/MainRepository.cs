@@ -67,7 +67,7 @@ namespace DataAccess
       }
       catch (Exception e)
       {
-        return Results.Failure<object>($"Failed to save sheets: {e.Message}.");
+        return Results.Failure<object>($"Failed to save sheets: {e.Message}");
       }
     }
 
